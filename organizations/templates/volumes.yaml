@@ -1,0 +1,14 @@
+---
+## Volume Created for Jenkins Application Stack
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+    name: {{.Values.Jenkins.Storage.Name}}
+spec:
+  storageClassName: {{.Values.Jenkins.Storage.Name}}
+  capacity:
+    storage: {{.Values.Jenkins.Storage.Size}}
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: {{.Values.Jenkins.Storage.Path}}

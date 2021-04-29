@@ -1,0 +1,13 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+    name:       {{.Values.Jenkins.Config.VolumeName}}
+    namespace:  {{.Values.NameSpace}}
+spec:
+  storageClassName: {{.Values.Jenkins.PVName}}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{.Values.Jenkins.Config.VolumeSize}}

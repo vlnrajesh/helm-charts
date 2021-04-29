@@ -1,0 +1,25 @@
+# Default values for jenkins.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+NameSpace: ci
+Jenkins:
+  PVName: pv001
+  Config:
+    VolumeName: pvc001
+    VolumeSize: 4Gi
+  Workspace:
+    VolumeName: pvc002
+    VolumeSize: 6Gi
+  App:
+    Name: jenkins
+    ReplicaSet: 1
+    DockerImageURL: vlnrajesh/jenkins:latest
+    Memory: 2048Mi
+    CPU: 250m
+    HttpPort: 8080
+    HomePath: /var/jenkins_home
+    Workspace: /var/jenkins_home/workspace
+  Service:
+    Name: jenkins
+    Port: 30000
