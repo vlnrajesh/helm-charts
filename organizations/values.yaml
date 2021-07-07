@@ -9,6 +9,6 @@ Project: Ethnalaya
 Jenkins:
   Storage:
     Name: pv001
-    Path: "/Users/rajeshj/data/jenkins"
+    Path: "/opt/data/jenkins"
     Size: 20Gi
 ## Physical Volume Claim

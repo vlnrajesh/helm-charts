@@ -7,7 +7,7 @@ Jenkins:
   PVName: pv001
   Config:
     VolumeName: pvc001
-    VolumeSize: 4Gi
+    VolumeSize: 5Gi
   Workspace:
     VolumeName: pvc002
     VolumeSize: 6Gi

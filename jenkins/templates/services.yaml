@@ -9,4 +9,5 @@ spec:
     app: {{.Values.Jenkins.App.Name}}
   ports:
     - port: {{.Values.Jenkins.App.HttpPort}}
-      nodePort: {{.Values.Jenkins.Service.Port}}
+      targetPort: {{.Values.Jenkins.Service.Port}}
+      name: {{.Values.Jenkins.Service.Name}}
