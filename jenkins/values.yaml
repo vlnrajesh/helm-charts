@@ -15,11 +15,11 @@ Jenkins:
     Name: jenkins
     ReplicaSet: 1
     DockerImageURL: vlnrajesh/jenkins:latest
-    Memory: 2048Mi
-    CPU: 250m
+    Memory: 4096Mi
+    CPU: 256m
     HttpPort: 8080
     HomePath: /var/jenkins_home
     Workspace: /var/jenkins_home/workspace
   Service:
     Name: jenkins
-    Port: 30000
+    Port: 8080

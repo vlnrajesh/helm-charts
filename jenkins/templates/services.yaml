@@ -4,10 +4,11 @@ metadata:
   name: {{.Values.Jenkins.Service.Name}}
   namespace: {{.Values.NameSpace}}
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: {{.Values.Jenkins.App.Name}}
   ports:
     - port: {{.Values.Jenkins.App.HttpPort}}
       targetPort: {{.Values.Jenkins.Service.Port}}
+      protocol: TCP
       name: {{.Values.Jenkins.Service.Name}}
