@@ -1,0 +1,26 @@
+base:
+  replicaCount: 1
+  onDemand:
+    enabled: false
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 2
+    targetCPUUtilizationPercentage: 80
+    targetMemoryUtilizationPercentage: 80
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  revisionHistoryLimit: 2
+  volumes:
+    - name: test-app-secrets-config
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: test-app-secrets-config
+  affinity: {}

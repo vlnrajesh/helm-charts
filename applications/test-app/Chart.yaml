@@ -1,0 +1,11 @@
+apiVersion: v2
+name: test-app
+description: test-app for base-chart
+type: application
+version: 0.1.0
+appVersion: "latest"
+dependencies:
+  - name: base-chart
+    alias: base
+    version: "0.1.0"
+    repository: "file://../../base-chart"

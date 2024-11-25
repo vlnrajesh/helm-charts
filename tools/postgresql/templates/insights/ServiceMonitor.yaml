@@ -1,0 +1,16 @@
+{{- if .Values.insights.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "postgresql.v1.insights.fullname" .}}-sm
+  labels:
+    app:  {{ include "postgresql.v1.insights.fullname" .}}
+spec:
+  selector:
+    matchLabels:
+      app:  {{ include "postgresql.v1.insights.fullname" .}}
+  endpoints:
+    - port:  insights-metrics
+      path: /metrics
+      interval: 15s
+{{- end }}

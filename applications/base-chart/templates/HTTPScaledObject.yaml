@@ -1,0 +1,18 @@
+{{- if and .Values.httpScaledObject (hasKey .Values.httpScaledObject "enabled") (or .Values.httpScaledObject.enabled false) }}
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name:  {{ .Release.Name }}-http-scaled-object
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "..labels" . | nindent 4 }}
+spec:
+  hosts:
+    - {{.Values.httpScaledObject.host}}
+  scaleTargetRef:
+    service: {{ include "..fullname" . }}
+    port: {{ $.Values.service.port }}
+  replicas:
+    min: {{.Values.httpScaledObject.min | default 0}}
+    max: {{.Values.httpScaledObject.max | default 10}}
+  {{- end }}

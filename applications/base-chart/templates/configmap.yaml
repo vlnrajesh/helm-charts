@@ -1,0 +1,16 @@
+{{- if .Values.configmap.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{.Release.Name}}-config
+  labels:
+  {{- include "..labels" . | nindent 4 }}
+data:
+{{- range $key, $value := .Values.configmap.env }}
+  {{ toYaml $key }} : {{ toYaml $value | trimSuffix "\n" | indent 4}}
+{{- end }}
+{{- range $key, $value := .Values.configmap.aws }}
+  {{ toYaml $key }} : {{ toYaml $value | trimSuffix "\n" | indent 4}}
+{{- end }}
+
+{{- end }}

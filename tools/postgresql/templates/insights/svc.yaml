@@ -1,0 +1,15 @@
+{{- if .Values.insights.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "postgresql.v1.insights.fullname" .}}-svc
+  labels:
+    app:  {{ include "postgresql.v1.insights.fullname" .}}
+spec:
+  selector:
+    app:  {{ include "postgresql.v1.insights.fullname" .}}
+  ports:
+    - name: insights-metrics
+      port: {{.Values.insights.port}}
+      targetPort: {{.Values.insights.port}}
+{{- end }}

@@ -1,0 +1,44 @@
+{{- if .Values.insights.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "postgresql.v1.insights.fullname" .}}-deployment
+  labels:
+    app:  {{ include "postgresql.v1.insights.fullname" .}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app:  {{ include "postgresql.v1.insights.fullname" .}}
+  template:
+    metadata:
+      labels:
+        app:  {{ include "postgresql.v1.insights.fullname" .}}
+    spec:
+      containers:
+        - name: performance-insights
+          image: {{.Values.insights.image.name}}:{{.Values.insights.image.tag | default "latest"}}
+          env:
+            - name: DB_HOST
+              value: {{ include "postgresql.v1.primary.fullname" . }}
+            - name: DB_PORT
+              value: {{ include "postgresql.v1.service.port" . | quote }}
+            - name: DB_NAME
+              value: {{.Values.insights.db_name | default "postgres" }}
+            - name: DB_USER
+              value: {{.Values.insights.db_user | quote }}
+            - name: DB_PASSWORD
+              value: {{.Values.insights.db_password | quote }}
+          ports:
+            - name: insights-port
+              containerPort: {{.Values.insights.port}}
+              protocol: TCP
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+      restartPolicy: Always
+{{- end}}

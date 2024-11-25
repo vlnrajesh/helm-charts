@@ -1,0 +1,60 @@
+{{- range .Values.jobs }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .name }}-job
+  labels:
+    {{- include "..labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      labels:
+        app: {{.name }}-job
+    spec:
+      serviceAccountName: {{ $.Values.serviceAccount.name }}
+      restartPolicy: {{ .restartPolicy | default "Never" }}
+      containers:
+        - name: {{ .name }}
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: [ "/bin/sh", "-c" ]
+          args: {{ .command }}
+          resources: {{ toJson .resources }}
+          {{- with .env }}
+          env:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+          envFrom:
+            {{- toYaml $.Values.envFrom | nindent 10 }}
+          {{- with $.Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with $.Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  backoffLimit: {{ .backoffLimit | default "0" }}
+---
+{{- end }}
+---
+{{- range .Values.jobs }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{.name}}-job-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: {{.name}}-job
+---
+{{- end }}
+
+
+
+

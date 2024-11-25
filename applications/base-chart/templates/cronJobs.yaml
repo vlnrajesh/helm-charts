@@ -1,0 +1,68 @@
+{{- range .Values.cronJobs }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .name }}
+spec:
+  schedule: "{{ .schedule }}"
+  concurrencyPolicy: Forbid
+  failedJobsHistoryLimit: {{ .failedJobsHistoryLimit  | default "3" }}
+  successfulJobsHistoryLimit: {{ .successfulJobsHistoryLimit | default "1" }}
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: cronjob-{{.name}}
+        spec:
+          serviceAccountName: {{ $.Values.serviceAccount.name }}
+          restartPolicy: {{.restartPolicy | default "Never" }}
+          containers:
+            - name: {{ .name }}
+              image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+              imagePullPolicy: {{ $.Values.image.pullPolicy }}
+              command: [ "/bin/sh", "-c" ]
+              args: {{.command}}
+              resources: {{ toJson .resources }}
+              env:
+                - name: NODE_OPTIONS
+                  value: "--max-old-space-size={{ trimSuffix "Gi"  .resources.limits.memory |  mulf 1024 | int }}"
+              envFrom:
+              {{- toYaml $.Values.envFrom | nindent 14 }}
+              {{- with $.Values.volumeMounts }}
+              volumeMounts:
+                {{- toYaml . | nindent 14 }}
+              {{- end }}
+          {{- with $.Values.volumes }}
+          volumes:
+            {{- toYaml . | nindent 10 }}
+          {{- end }}
+        {{- with .nodeSelector }}
+          nodeSelector:
+          {{- toYaml . | nindent 10 }}
+        {{- else }}
+          nodeSelector: {}
+        {{- end }}
+      backoffLimit: {{.backoffLimit | default "0" }}
+
+---
+{{- end }}
+
+---
+
+{{- range .Values.cronJobs }}
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{.name}}-pdb
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: cronjob-{{.name}}
+---
+{{- end }}
+
+
+
+

@@ -1,0 +1,36 @@
+{{- if and .Values.scaledObject (hasKey .Values.scaledObject "enabled") (or .Values.scaledObject.enabled false) }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name:  {{ .Release.Name }}-scaledobject
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "..labels" . | nindent 4 }}
+spec:
+  scaleTargetRef:
+    name: {{ .Release.Name }}
+    kind: {{.Values.scaledObject.kind | default "Deployment" }}
+  minReplicaCount: {{ .Values.scaledObject.minReplicaCount | default 0 }}
+  maxReplicaCount: {{ .Values.scaledObject.maxReplicaCount | default 10 }}
+  cooldownPeriod: {{ .Values.scaledObject.cooldownPeriod | default 60 }}
+  triggers:
+    - type: {{ .Values.scaledObject.triggerType }}
+      metadata:
+       {{- range $key, $value := .Values.scaledObject.triggerMetadata }}
+       {{ $key }}: "{{ $value }}"
+       {{- end }}
+      authenticationRef:
+        name: {{ .Release.Name }}-triggerauth
+
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ .Release.Name }}-triggerauth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "..labels" . | nindent 4 }}
+spec:
+  podIdentity:
+    provider: aws-eks
+{{- end }}

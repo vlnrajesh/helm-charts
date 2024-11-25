@@ -1,0 +1,39 @@
+{{- if .Values.restore.job.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name:  {{ include "postgresql.v1.primary.fullname" . }}-restore
+spec:
+  template:
+    spec:
+      serviceAccountName: {{.Values.restore.serviceAccountName }}
+      containers:
+        - name: restore-container
+          image: {{.Values.restore.image.name}}:{{.Values.restore.image.tag | default "mount_s3"}}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
+          securityContext:
+            privileged: true
+        {{- if .Values.restore.job.resources }}
+          resources: {{- toYaml .Values.restore.job.resources | nindent 10 }}
+          {{- else if ne .Values.backup.cronjob.resourcesPreset "none" }}
+          resources: {{- include "common.resources.preset" (dict "type" .Values.backup.cronjob.resourcesPreset) | nindent 10 }}
+        {{- end }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Mounting S3 Bucket";
+              mount-s3 $S3_BUCKET /mnt;
+              echo "Halting for Restore command";
+              sleep infinity
+          env:
+            - name: S3_BUCKET
+              value: {{.Values.restore.bucket_name | quote }}
+            - name: AWS_REGION
+              value: {{.Values.restore.job.region | default "ap-south-1"}}
+            - name: PGHOST
+              value: {{ include "postgresql.v1.primary.fullname" . }}
+            - name: PGPORT
+              value: {{ include "postgresql.v1.service.port" . | quote }}
+      restartPolicy: {{ .Values.restore.restartPolicy | quote }}
+
+{{- end}}

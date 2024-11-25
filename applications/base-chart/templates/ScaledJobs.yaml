@@ -1,0 +1,49 @@
+{{- if and .Values.scaledJob (hasKey .Values.scaledJob "enabled") (or .Values.scaledJob.enabled false) }}
+{{- range .Values.scaledJob.jobs }}
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: {{.name}}-scaledjob
+spec:
+  jobTargetRef:
+    template:
+      spec:
+        containers:
+          - name: {{ .name }}
+            image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag | default $.Chart.AppVersion }}"
+            imagePullPolicy: {{ $.Values.image.pullPolicy }}
+            command: [ "/bin/sh", "-c" ]
+            args: {{.command}}
+         {{- with $.Values.volumeMounts }}
+            volumeMounts:
+              {{- toYaml . | nindent 12 }}
+          {{- end }}
+        {{- with .env }}
+            env:
+             {{- toYaml . | nindent 12 }}
+         {{- end }}
+  pollingInterval: {{ .pollingInterval | default 15 }}
+  successfulJobsHistoryLimit:  {{ .successfulJobHistoryLimit | default 5 }}
+  failedJobsHistoryLimit: {{ .failedJobsHistoryLimit | default 5 }}
+  maxReplicaCount: {{ .maxReplicaCount | default 100 }}
+  triggers:
+    - type: {{ .Values.scaledObject.triggerType }}
+      metadata:
+       {{- range $key, $value := .Values.scaledObject.triggerMetadata }}
+       {{ $key }}: "{{ $value }}"
+       {{- end }}
+      authenticationRef:
+        name: {{ .name }}-job-triggerauth
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ .name }}-job-triggerauth
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "..labels" . | nindent 4 }}
+spec:
+  podIdentity:
+    provider: aws-eks
+{{- end }}
+{{- end }}
